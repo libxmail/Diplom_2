@@ -1,4 +1,3 @@
-
 import allure
 import pytest
 from helpers import UserApi
@@ -8,8 +7,10 @@ class TestUserRegistration:
 
     @allure.title("Успешное создание уникального пользователя")
     def test_create_unique_user(self, registered_user):
-        assert registered_user.status_code == 200
-        assert registered_user.json()["success"] is True
+        assert (
+            registered_user.status_code,
+            registered_user.json()["success"]
+        ) == (200, True)
 
     @allure.title("Создание пользователя, который уже зарегистрирован")
     def test_create_existing_user(self, create_and_delete_user):
@@ -17,9 +18,11 @@ class TestUserRegistration:
 
         response = UserApi.register_user(payload)
 
-        assert response.status_code == 403
-        assert response.json()["success"] is False
-        assert response.json()["message"] == "User already exists"
+        assert (
+            response.status_code,
+            response.json()["success"],
+            response.json()["message"]
+        ) == (403, False, "User already exists")
 
     @allure.title("Создание пользователя с пропуском обязательного поля")
     @pytest.mark.parametrize("field_to_remove", ["email", "password", "name"])
@@ -29,9 +32,13 @@ class TestUserRegistration:
 
         response = UserApi.register_user(incomplete_payload)
 
-        assert response.status_code == 403
-        assert response.json()["success"] is False
-        assert response.json()["message"] == (
+        assert (
+            response.status_code,
+            response.json()["success"],
+            response.json()["message"]
+        ) == (
+            403,
+            False,
             "Email, password and name are required fields"
         )
 
@@ -48,9 +55,11 @@ class TestUserLogin:
 
         response = UserApi.login_user(login_data)
 
-        assert response.status_code == 200
-        assert response.json()["success"] is True
-        assert "accessToken" in response.json()
+        assert (
+            response.status_code,
+            response.json()["success"],
+            "accessToken" in response.json()
+        ) == (200, True, True)
 
     @allure.title("Вход с неверным паролем")
     def test_login_invalid_password(self, create_and_delete_user):
@@ -62,9 +71,15 @@ class TestUserLogin:
 
         response = UserApi.login_user(login_data)
 
-        assert response.status_code == 401
-        assert response.json()["success"] is False
-        assert response.json()["message"] == "email or password are incorrect"
+        assert (
+            response.status_code,
+            response.json()["success"],
+            response.json()["message"]
+        ) == (
+            401,
+            False,
+            "email or password are incorrect"
+        )
 
     @allure.title("Вход с неверным логином")
     def test_login_invalid_email(self, create_and_delete_user):
@@ -76,6 +91,12 @@ class TestUserLogin:
 
         response = UserApi.login_user(login_data)
 
-        assert response.status_code == 401
-        assert response.json()["success"] is False
-        assert response.json()["message"] == "email or password are incorrect"
+        assert (
+            response.status_code,
+            response.json()["success"],
+            response.json()["message"]
+        ) == (
+            401,
+            False,
+            "email or password are incorrect"
+        )
