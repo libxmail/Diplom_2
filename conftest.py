@@ -1,30 +1,31 @@
 import pytest
-from faker import Faker
-from helpers import UserApi
+from helpers import UserApi, generate_user_data
+
 
 @pytest.fixture
 def random_user():
-    fake = Faker()
-    email = fake.email()
-    password = fake.password()
-    name = fake.first_name()
-    return {"email": email, "password": password, "name": name}
+    return generate_user_data()
+
 
 @pytest.fixture
 def create_and_delete_user():
-    fake = Faker()
-    payload = {
-        "email": fake.email(),
-        "password": fake.password(),
-        "name": fake.first_name()
-    }
-    
-    # Создаем пользователя
+    payload = generate_user_data()
     response = UserApi.register_user(payload)
     access_token = response.json().get("accessToken")
-    
+
     yield payload, access_token
-    
-    # Удаляем пользователя после теста
+
+    if access_token:
+        UserApi.delete_user(access_token)
+
+
+@pytest.fixture
+def registered_user():
+    payload = generate_user_data()
+    response = UserApi.register_user(payload)
+    access_token = response.json().get("accessToken")
+
+    yield response
+
     if access_token:
         UserApi.delete_user(access_token)
